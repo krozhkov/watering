@@ -1,0 +1,7 @@
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json
+[Dd]ebug/
+[Rr]elease/
+*.qbs.user
