@@ -3,13 +3,19 @@
 #include "TimerOne.h"
 
 #define PUMP_PIN 13
-#define DELAY_TIME 5000
+#define DELAY_TIME 2000
 #define BAUD_RATE 9600
 #define ONE_SECOND 1000000
-#define PERIOD 300 // 5 minutes
-#define WATERING_TIME 5000
+#define PERIOD 86400 // 1 day
+#define WATERING_TIME 60000 // 1 min
 
 volatile unsigned long time;
+
+void watering() {
+    digitalWrite(PUMP_PIN, HIGH);
+    delay(WATERING_TIME);
+    digitalWrite(PUMP_PIN, LOW);
+}
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -20,6 +26,8 @@ void setup() {
 
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(PUMP_PIN, LOW);
+  // first watering now!
+  watering();
 }
 
 void loop() {
@@ -27,9 +35,7 @@ void loop() {
   if (time >= PERIOD) {
     time = 0;
     Serial.println("Watering time!");
-    digitalWrite(PUMP_PIN, HIGH);
-    delay(WATERING_TIME);
-    digitalWrite(PUMP_PIN, LOW);
+    watering();
   }
   delay(DELAY_TIME);
 }
