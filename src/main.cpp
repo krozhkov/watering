@@ -4,17 +4,22 @@
 #include "RtcDS3231.h"
 
 #define PUMP_PIN 13
-#define DELAY_TIME 2000
+#define DELAY_TIME 10000
 #define BAUD_RATE 9600
-#define ONE_SECOND 1000000
-#define PERIOD 86400 // 1 day
 #define WATERING_TIME 30000 // 30 sec
+#define SQW_PIN 2
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 RtcDS3231<TwoWire> Rtc(Wire);
 
-volatile unsigned long time;
+volatile boolean alarmIsrWasCalled = false;
+
+void alarmIsr()
+{
+    alarmIsrWasCalled = true;
+    Serial.println("alarmIsr() called.");
+}
 
 void watering() {
     digitalWrite(PUMP_PIN, HIGH);
@@ -39,7 +44,9 @@ void printDateTime(const RtcDateTime& dt)
     Serial.println(datestring);
 }
 
-void RtcInit() {
+void rtcInit() {
+    pinMode(SQW_PIN, INPUT_PULLUP);
+
     Rtc.Begin();
 
     auto compiledTime = RtcDateTime(__DATE__, __TIME__);
@@ -66,13 +73,22 @@ void RtcInit() {
     }
 
     Rtc.Enable32kHzPin(false);
-    Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
+    Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeAlarmOne);
+
+    // everyday at 11:00 o'clock
+    DS3231AlarmOne alarmOne(1, 11, 0, 0, DS3231AlarmOneControl_HoursMinutesSecondsMatch);
+    Rtc.SetAlarmOne(alarmOne);
+
+    // throw away any old alarm state before we ran
+    Rtc.LatchAlarmsTriggeredFlags();
+
+    attachInterrupt(INT0, alarmIsr, FALLING);
 }
 
-void RtcSetDateTime() {
+void rtcSetDateTime() {
     // Format: "Dec 26 2009|12:34:56"
     Serial.println("Set current date and time.");
-    auto str = Serial.readStringUntil("\r\n");
+    auto str = Serial.readStringUntil(PSTR("\r\n"));
     while (Serial.available() > 0) Serial.read();
     str.trim();
     auto index = str.indexOf('|');
@@ -89,21 +105,21 @@ void setup() {
   pinMode(PUMP_PIN, OUTPUT);
   digitalWrite(PUMP_PIN, LOW);
 
-  RtcInit();
-  // first watering now!
-  //watering();
+  rtcInit();
 }
 
 void loop() {
   if (Serial.available() > 0) {
-    RtcSetDateTime();
+    rtcSetDateTime();
   }
 
-  printDateTime(Rtc.GetDateTime());
-  if (time >= PERIOD) {
-    time = 0;
-    Serial.println("Watering time!");
-    watering();
+  if (alarmIsrWasCalled) {
+      alarmIsrWasCalled = false;
+      printDateTime(Rtc.GetDateTime());
+
+      Serial.println("Watering time!");
+      watering();
   }
+
   delay(DELAY_TIME);
 }
