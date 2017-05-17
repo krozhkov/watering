@@ -51,10 +51,12 @@ Product {
     cpp.includePaths: [
         frameworkPath + "cores/arduino",
         frameworkPath + "variants/eightanaloginputs",
+        frameworkPath + "libraries/Wire/src",
         toolchainPath + "avr/include",
         toolchainPath + "lib/gcc/avr/4.9.2/include",
         toolchainPath + "lib/gcc/avr/4.9.2/include-fixed",
-        pioLibsPath + "TimerOne_ID131"
+        pioLibsPath + "TimerOne_ID131",
+        pioLibsPath + "RTC_ID274/src"
     ]
     files: [
         "src/*"
@@ -71,6 +73,11 @@ Product {
         name: "arduino"
         prefix: frameworkPath + "cores/arduino/"
         files: ["*.c","*.cpp","*.S","*.h"]
+    }
+    Group {
+        name: "Wire"
+        prefix: frameworkPath + "libraries/Wire/src/**/"
+        files: ["*.c","*.cpp","*.h"]
     }
     Group {
         name: "libs"
