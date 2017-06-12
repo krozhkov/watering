@@ -115,6 +115,8 @@ void loop() {
 
   if (alarmIsrWasCalled) {
       alarmIsrWasCalled = false;
+      Rtc.LatchAlarmsTriggeredFlags();
+
       printDateTime(Rtc.GetDateTime());
 
       Serial.println("Watering time!");

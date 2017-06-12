@@ -51,7 +51,7 @@ Product {
     cpp.includePaths: [
         frameworkPath + "cores/arduino",
         frameworkPath + "variants/eightanaloginputs",
-        frameworkPath + "libraries/Wire/src",
+        frameworkPath + "libraries/__cores__/arduino/Wire/src",
         toolchainPath + "avr/include",
         toolchainPath + "lib/gcc/avr/4.9.2/include",
         toolchainPath + "lib/gcc/avr/4.9.2/include-fixed",
@@ -76,7 +76,7 @@ Product {
     }
     Group {
         name: "Wire"
-        prefix: frameworkPath + "libraries/Wire/src/**/"
+        prefix: frameworkPath + "libraries/__cores__/arduino/Wire/src/**/"
         files: ["*.c","*.cpp","*.h"]
     }
     Group {
